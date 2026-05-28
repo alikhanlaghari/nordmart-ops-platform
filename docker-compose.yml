@@ -1,0 +1,35 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: nordmart-postgres
+    environment:
+      POSTGRES_USER: nordmart
+      POSTGRES_PASSWORD: nordmart_password
+      POSTGRES_DB: nordmart_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - nordmart_postgres_data:/var/lib/postgresql/data
+
+  product-service:
+    build:
+      context: ./product-service
+    container_name: nordmart-product-service
+    environment:
+      DATABASE_URL: postgresql://nordmart:nordmart_password@postgres:5432/nordmart_db?schema=public
+    ports:
+      - "3001:3001"
+    depends_on:
+      - postgres
+
+  api-gateway:
+    build:
+      context: ./api-gateway
+    container_name: nordmart-api-gateway
+    ports:
+      - "3000:3000"
+    depends_on:
+      - product-service
+
+volumes:
+  nordmart_postgres_data:
